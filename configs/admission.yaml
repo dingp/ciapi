@@ -1,0 +1,36 @@
+---
+  apiVersion: v1
+
+  webhook: github
+
+  clusters:
+    - name: perlmutter
+      account: cce
+      sfapi_jwt_name: hep-cce-sfapi-jwt
+    - name: exalearn4
+      account: cce
+
+  repositories:
+    - name: hep-cce/FCS-GPU
+      user:
+        - dingp
+        - cgleggett
+        - lorenz369
+      branch:
+        - main
+        - development
+      secret: hep-cce-FCS-GPU-github-webhook-secret
+    - name: dingp/acme
+      user:
+        - dingp
+      branch:
+        - main
+        - development
+      secret: dingp-acme-github-webhook-secret
+    - name: dingp/ciapi
+      user:
+        - dingp
+      branch:
+        - main
+        - development
+      secret: dingp-ciapi-github-webhook-secret

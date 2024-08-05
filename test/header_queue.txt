@@ -1,0 +1,12 @@
+Request URL:https://ci.x2d2.net/webhook
+Request method: POST
+Accept: */*
+Content-Type: application/json
+User-Agent: GitHub-Hookshot/d4785c0
+X-GitHub-Delivery: ad684860-3eda-11ef-8918-b46bd978445d
+X-GitHub-Event: workflow_job
+X-GitHub-Hook-ID: 488128906
+X-GitHub-Hook-Installation-Target-ID: 798731195
+X-GitHub-Hook-Installation-Target-Type: repository
+X-Hub-Signature: sha1=7dcbcd219ec2aab68c5d5a37c67000654a243d5a
+X-Hub-Signature-256: sha256=50c0dc0e8a1ce088f8d26dbee56e93e9dcdd76a7ffab221eafb05d30dd2383f6
