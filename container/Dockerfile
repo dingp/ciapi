@@ -20,3 +20,8 @@ ARG CIAPI=/opt/ciapi
 RUN mkdir -p ${CIAPI} && \
     cd ${CIAPI} && \
     git clone https://github.com/dingp/ciapi
+
+# ADD requirements.txt 
+# create venv
+# install requirements
+# start uvicorn

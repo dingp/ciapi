@@ -3,23 +3,16 @@
 
   webhook: github
 
-  clusters:
-    - name: perlmutter
-      account: cce
-      sfapi_jwt_name: hep-cce-sfapi-jwt
-    - name: exalearn4
-      account: cce
+  ip_range: 
+    # obtained from https://api.github.com/meta
+    - "192.30.252.0/22"
+    - "185.199.108.0/22"
+    - "140.82.112.0/20"
+    - "143.55.64.0/20"
+    - "2a0a:a440::/29"
+    - "2606:50c0::/32"
 
-  repositories:
-    - name: hep-cce/FCS-GPU
-      user:
-        - dingp
-        - cgleggett
-        - lorenz369
-      branch:
-        - main
-        - development
-      secret: hep-cce-FCS-GPU-github-webhook-secret
+  repository:
     - name: dingp/acme
       user:
         - dingp
@@ -27,10 +20,9 @@
         - main
         - development
       secret: dingp-acme-github-webhook-secret
-    - name: dingp/ciapi
-      user:
-        - dingp
-      branch:
-        - main
-        - development
-      secret: dingp-ciapi-github-webhook-secret
+      cluster:
+        perlmutter:
+          host: perlmutter.nersc.gov
+          account: cce
+          protocol: sfapi
+          sfapi_jwt: hep-cce-sfapi-jwt
