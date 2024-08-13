@@ -73,7 +73,8 @@ def run_job(data_dict: dict, clusters: dict) -> None:
         logging.info(f"TOKEN_URL = {TOKEN_URL}")
         session = OAuth2Session( CLIENTID, PRIVATE_KEY, PrivateKeyJWT(TOKEN_URL), grant_type="client_credentials", token_endpoint=TOKEN_URL)
         logging.info(session.fetch_token())
-        cmd=f"/global/u2/d/dingpf/start_runner.sh {data_dict['repository']['full_name']}"
+        # will need to copy start_runner script first... 
+        cmd=f"{START_RUNNER_SCRIPT} {data_dict['repository']['full_name']}"
         r = session.post("https://api.nersc.gov/api/v1.2/utilities/command/perlmutter", data = {"executable": cmd})
         logging.info(f"Superfacility API status: r.json()")
     logging.info("Job completed.")
@@ -87,6 +88,7 @@ CLIENTID = read_file_content(f'{SECRETS_DIR}/clientid.txt')
 PRIVATE_KEY = read_file_content(f'{SECRETS_DIR}/priv_key.pem')
 TOKEN_URL = "https://oidc.nersc.gov/c2id/token"
 ADMISSION_CONF = '/ciapi/configs/admission.yaml'
+START_RUNNER_SCRIPT = '/ciapi/scripts/start_runner.sh'
 
 
 admission_conf = read_admission_conf(ADMISSION_CONF)
