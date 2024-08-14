@@ -19,10 +19,27 @@
       branch:
         - main
         - development
-      secret: dingp-acme-github-webhook-secret
+      webhook_secret: /secrets/dingp/acme/webhook
+      cluster:
+        perlmutter:
+          host: perlmutter.nersc.gov
+          account: dingpf
+          protocol: sfapi
+          client_id: /secrets/dingp/acme/sfapi.client_id.txt
+          private_key: /secrets/dingp/acme/sfapi.priv_key.pem
+    - name: hep-cce/FCS-GPU
+      user:
+        - dingp
+        - cgleggett
+        - lorenz369
+      branch:
+        - main
+        - development
+      webhook_secret: /secrets/hep-cce/FCS-GPU/webhook
       cluster:
         perlmutter:
           host: perlmutter.nersc.gov
           account: cce
           protocol: sfapi
-          sfapi_jwt: hep-cce-sfapi-jwt
+          client_id: /secrets/hep-cce/FCS-GPU/sfapi.client_id.txt
+          private_key: /secrets/hep-cce/FCS-GPU/sfapi.priv_key.pem

@@ -6,10 +6,9 @@ from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7523 import PrivateKeyJWT
 from litestar import Litestar, post, Request
 from litestar.exceptions import HTTPException
-
 import logging
-
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+
 
 def read_file_content(file_path: str) -> str:
     """Read content from a file and return as a string."""
@@ -42,6 +41,7 @@ def read_admission_conf(file_path: str) -> dict:
 
 def check_adminssion(data: dict, admission_conf: dict) -> bool:
     admitted = False
+
     if data['action'] != 'queued':
         return False
     for i in admission_conf['repository']:
@@ -54,7 +54,8 @@ def check_adminssion(data: dict, admission_conf: dict) -> bool:
         else:
             admitted = True    
             clusters = i['cluster']
-    return admitted, clusters
+            webhook_secret = read_file_content(i['webhook_secret'])
+    return admitted, clusters, webhook_secret
 
 
 def run_job(data_dict: dict, clusters: dict) -> None:
@@ -66,53 +67,32 @@ def run_job(data_dict: dict, clusters: dict) -> None:
     logging.info(f"Sender: {data_dict['sender']['login']}")
     logging.info(clusters)
     if "perlmutter" in clusters:
+        client_id = read_file_content(clusters['perlmutter']['client_id'])
+        private_key = read_file_content(clusters['perlmutter']['private_key'])
         logging.info("Running on Perlmutter")
-        # call SF API to run the job
-        logging.info(f"CLIENTID = {CLIENTID}")
-        logging.info(f"PRIVATE_KEY = {PRIVATE_KEY}")
+        logging.info(f"CLIENTID = {client_id}")
         logging.info(f"TOKEN_URL = {TOKEN_URL}")
-        session = OAuth2Session( CLIENTID, PRIVATE_KEY, PrivateKeyJWT(TOKEN_URL), grant_type="client_credentials", token_endpoint=TOKEN_URL)
+        session = OAuth2Session( client_id, private_key, PrivateKeyJWT(TOKEN_URL), grant_type="client_credentials", token_endpoint=TOKEN_URL)
         logging.info(session.fetch_token())
-        # will need to copy start_runner script first... 
-        cmd=f"{START_RUNNER_SCRIPT} {data_dict['repository']['full_name']}"
+        cmd=f"start_runner.sh {data_dict['repository']['full_name']}"
         r = session.post("https://api.nersc.gov/api/v1.2/utilities/command/perlmutter", data = {"executable": cmd})
         logging.info(f"Superfacility API status: r.json()")
     logging.info("Job completed.")
     return None
-
-
-# Define your GitHub webhook secret
-SECRETS_DIR='/secrets'
-GITHUB_SECRET = read_file_content(f'{SECRETS_DIR}/github_secret.txt')
-CLIENTID = read_file_content(f'{SECRETS_DIR}/clientid.txt')
-PRIVATE_KEY = read_file_content(f'{SECRETS_DIR}/priv_key.pem')
-TOKEN_URL = "https://oidc.nersc.gov/c2id/token"
-ADMISSION_CONF = '/ciapi/configs/admission.yaml'
-START_RUNNER_SCRIPT = '/ciapi/scripts/start_runner.sh'
-
-
-admission_conf = read_admission_conf(ADMISSION_CONF)
 
 @post("/webhook")
 async def github_webhook(request: Request) -> dict:
     """Handle GitHub webhook."""
     try:
         payload = await request.body()
-        #signature = request.headers.get("X-Hub-Signature-256")
-        
-        #if not signature:
-        #    raise HTTPException(status_code=400, detail="Missing signature header")
-        
-        #if not verify_signature(payload, signature, GITHUB_SECRET):
-        #    raise HTTPException(status_code=400, detail="Invalid signature")
-
-        # Decode payload and parse JSON
-        data = json.loads(payload.decode('utf-8'))
-        # parse data and decide what to do with it
-        
         logging.info("Received payload.")
-        #print(json.dumps(data, indent=4))
-        admitted, clusters = check_adminssion(data, admission_conf)
+        signature = request.headers.get("X-Hub-Signature-256")
+        if not signature:
+            raise HTTPException(status_code=400, detail="Missing signature header")
+        data = json.loads(payload.decode('utf-8'))
+        admitted, clusters, webhook_secret = check_adminssion(data, signature, ADDMISSION_CONF)
+        if not verify_signature(payload, signature, webhook_secret):
+            raise HTTPException(status_code=400, detail="Invalid signature")
         if admitted:
             logging.info("Admission success")
             logging.info(f"data['action'] = {data['action']}")
@@ -123,12 +103,14 @@ async def github_webhook(request: Request) -> dict:
             return {"status": "job admitted"}
         return {"status": "success, job not admitted"}
     except Exception as e:
-        #print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-# Create the Litestar app
+
+TOKEN_URL = "https://oidc.nersc.gov/c2id/token"
+ADDMISSION_CONF = read_admission_conf("/ciapi/configs/admission.yaml")
+# More routes can be added here
 app = Litestar(route_handlers=[github_webhook])
 
-# Run the app
+
 if __name__ == "__main__":
     app.run()
