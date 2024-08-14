@@ -11,17 +11,9 @@ RUN \
     apt-get clean all    &&  \
     rm -rf /var/lib/apt/lists/*
 
+ARG CIAPI=/opt/ciapi
+RUN git clone https://github.com/dingp/ciapi ${CIAPI}
 
 RUN cd /opt && python3 -m venv litestar
-RUN ["/bin/bash", "-c", "source /opt/litestar/bin/activate && pip install litestar uvicorn"]
-
-
-ARG CIAPI=/opt/ciapi
-RUN mkdir -p ${CIAPI} && \
-    cd ${CIAPI} && \
-    git clone https://github.com/dingp/ciapi
-
-# ADD requirements.txt 
-# create venv
-# install requirements
-# start uvicorn
+RUN source /opt/litestar/bin/activate && \
+    pip install -r ${CIAPI}/requirements.txt
