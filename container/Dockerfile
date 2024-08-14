@@ -1,5 +1,7 @@
 #miniconda based python 3.9 image
-FROM python:3
+FROM python:3-alpine
+
+RUN apk update && apk add git
 
 ARG CIAPI=/opt/ciapi
 RUN git clone https://github.com/dingp/ciapi ${CIAPI}
