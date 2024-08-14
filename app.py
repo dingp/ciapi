@@ -1,3 +1,4 @@
+import os
 import hmac
 import hashlib
 import json
@@ -106,8 +107,9 @@ async def github_webhook(request: Request) -> dict:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-TOKEN_URL = "https://oidc.nersc.gov/c2id/token"
-ADDMISSION_CONF = read_admission_conf("/ciapi/configs/admission.yaml")
+TOKEN_URL = os.environ.get("TOKEN_URL", "https://oidc.nersc.gov/c2id/token")
+ADDMISSION_CONF_FILE = os.environ.get("ADDMISSION_CONF_FILE", "configs/admission.yaml")
+ADDMISSION_CONF = read_admission_conf(ADDMISSION_CONF_FILE)
 # More routes can be added here
 app = Litestar(route_handlers=[github_webhook])
 
