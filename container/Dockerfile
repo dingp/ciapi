@@ -14,6 +14,5 @@ RUN \
 ARG CIAPI=/opt/ciapi
 RUN git clone https://github.com/dingp/ciapi ${CIAPI}
 
-RUN cd /opt && python3 -m venv litestar
-RUN source /opt/litestar/bin/activate && \
-    pip install -r ${CIAPI}/requirements.txt
+RUN python3 -m venv /opt/litestar
+RUN . /opt/litestar/bin/activate && pip install -r ${CIAPI}/requirements.txt
