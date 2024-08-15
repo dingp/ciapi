@@ -79,10 +79,10 @@ def run_job(data_dict: dict, clusters: dict) -> None:
         logging.info(f"CLIENTID = {client_id}")
         logging.info(f"TOKEN_URL = {TOKEN_URL}")
         session = OAuth2Session( client_id, private_key, PrivateKeyJWT(TOKEN_URL), grant_type="client_credentials", token_endpoint=TOKEN_URL)
-        logging.info(session.fetch_token())
+        session.fetch_token()
         cmd=f"start_runner.sh {data_dict['repository']['full_name']}"
         r = session.post("https://api.nersc.gov/api/v1.2/utilities/command/perlmutter", data = {"executable": cmd})
-        logging.info(f"Superfacility API status: r.json()")
+        logging.info(f"Superfacility API status: {r.json()}")
     logging.info("Job completed.")
     return None
 
