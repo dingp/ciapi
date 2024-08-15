@@ -97,6 +97,9 @@ async def github_webhook(request: Request) -> dict:
             raise HTTPException(status_code=400, detail="Missing signature header")
         data = json.loads(payload.decode('utf-8'))
         (admitted, clusters, webhook_secret) = check_admission(data, ADDMISSION_CONF)
+        if not admitted:
+            logging.info("job not admitted")
+            return {"status": "job not admitted"}
         if not verify_signature(payload, signature, webhook_secret):
             raise HTTPException(status_code=400, detail="Invalid signature")
         if admitted:
