@@ -40,7 +40,7 @@ def read_admission_conf(file_path: str) -> dict:
         return None
 
 
-def check_adminssion(data: dict, admission_conf: dict):
+def check_admission(data: dict, admission_conf: dict):
     return_val = (False, False, False)
 
     if data['action'] != 'queued':
@@ -96,7 +96,7 @@ async def github_webhook(request: Request) -> dict:
         if not signature:
             raise HTTPException(status_code=400, detail="Missing signature header")
         data = json.loads(payload.decode('utf-8'))
-        (admitted, clusters, webhook_secret) = check_adminssion(data, ADDMISSION_CONF)
+        (admitted, clusters, webhook_secret) = check_admission(data, ADDMISSION_CONF)
         if not verify_signature(payload, signature, webhook_secret):
             raise HTTPException(status_code=400, detail="Invalid signature")
         if admitted:
