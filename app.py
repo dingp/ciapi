@@ -40,11 +40,16 @@ def read_admission_conf(file_path: str) -> dict:
         return None
 
 
-def check_adminssion(data: dict, admission_conf: dict) -> bool:
-    admitted = False
+def check_adminssion(data: dict, admission_conf: dict):
+    return_val = (False, False, False)
 
     if data['action'] != 'queued':
-        return False
+        logging.info("Not admitted, job not queued")
+        return return_val
+    if 'workflow_job' not in data:
+        logging.info("Not admitted, not a workflow job event")
+        return return_val
+
     for i in admission_conf['repository']:
         if data['repository']['full_name'] != i['name']:
             continue
@@ -53,10 +58,10 @@ def check_adminssion(data: dict, admission_conf: dict) -> bool:
         elif data['sender']['login'] not in i['user']:
             continue
         else:
-            admitted = True    
-            clusters = i['cluster']
             webhook_secret = read_file_content(i['webhook_secret'])
-    return admitted, clusters, webhook_secret
+            return_val = (True, i['cluster'], webhook_secret)
+            break
+    return return_val
 
 
 def run_job(data_dict: dict, clusters: dict) -> None:
@@ -91,7 +96,7 @@ async def github_webhook(request: Request) -> dict:
         if not signature:
             raise HTTPException(status_code=400, detail="Missing signature header")
         data = json.loads(payload.decode('utf-8'))
-        admitted, clusters, webhook_secret = check_adminssion(data, signature, ADDMISSION_CONF)
+        (admitted, clusters, webhook_secret) = check_adminssion(data, ADDMISSION_CONF)
         if not verify_signature(payload, signature, webhook_secret):
             raise HTTPException(status_code=400, detail="Invalid signature")
         if admitted:
