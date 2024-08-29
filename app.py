@@ -50,6 +50,10 @@ def check_admission(data: dict, admission_conf: dict):
         logging.info("Not admitted, not a workflow job event")
         return return_val
 
+    if 'labels' not in data['workflow_job']:
+        logging.info("Not admitted, no runner label specified")
+        return return_val
+
     for i in admission_conf['repository']:
         if data['repository']['full_name'] != i['name']:
             continue
@@ -72,7 +76,7 @@ def run_job(data_dict: dict, clusters: dict) -> None:
     logging.info(f"Branch: {data_dict['workflow_job']['head_branch']}")
     logging.info(f"Sender: {data_dict['sender']['login']}")
     logging.info(clusters)
-    if "perlmutter" in clusters:
+    if "perlmutter" in clusters and 'pm-login' in data_dict['workflow_job']['labels']:
         client_id = read_file_content(clusters['perlmutter']['client_id'])
         private_key = read_file_content(clusters['perlmutter']['private_key'])
         logging.info("Running on Perlmutter")
